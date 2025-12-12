@@ -2,9 +2,9 @@
 // PUBLIC_INTERFACE
 
 /**
- * Base URL for API requests - uses environment variable or defaults to localhost
+ * Base URL for API requests - uses environment variable or defaults to same-origin
  */
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 /**
  * Makes an HTTP request to the backend API
