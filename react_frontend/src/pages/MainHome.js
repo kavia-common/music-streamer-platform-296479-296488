@@ -3,16 +3,21 @@ import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
 import BottomPlayer from '../components/BottomPlayer';
 import { useAudiusTrending } from '../hooks/useAudiusTrending';
+import { useAudiusSearch } from '../hooks/useAudiusSearch';
 import './MainHome.css';
 
 /**
  * Main authenticated home page with Spotify-like layout
- * Displays sidebar, top navigation, Audius trending tracks, and bottom player
+ * Displays sidebar, top navigation, Audius trending or search results, and bottom player
  */
 // PUBLIC_INTERFACE
 function MainHome() {
-  const { tracks, loading, error } = useAudiusTrending();
+  const { tracks: trendingTracks, loading: trendingLoading, error: trendingError } = useAudiusTrending();
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Use search hook with current query
+  const { tracks: searchTracks, loading: searchLoading, error: searchError } = useAudiusSearch(searchQuery);
 
   /**
    * Handles track selection for playback
@@ -22,21 +27,39 @@ function MainHome() {
     setCurrentTrack(track);
   };
 
+  /**
+   * Handles search query from TopNav
+   * @param {string} query - The search query string
+   */
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
+  // Determine which tracks to display and states to use
+  const isSearching = searchQuery.trim() !== '';
+  const tracks = isSearching ? searchTracks : trendingTracks;
+  const loading = isSearching ? searchLoading : trendingLoading;
+  const error = isSearching ? searchError : trendingError;
+  const title = isSearching ? `Search results for "${searchQuery}"` : 'Trending on Audius';
+  const subtitle = isSearching 
+    ? `Found ${tracks.length} track${tracks.length !== 1 ? 's' : ''}` 
+    : 'Top 20 tracks trending right now';
+
   return (
     <div className="main-home">
       <Sidebar />
       
       <div className="main-content">
-        <TopNav />
+        <TopNav onSearch={handleSearch} />
         
         <div className="content-area">
-          <h1 className="welcome-title">Trending on Audius</h1>
-          <p className="welcome-subtitle">Top 20 tracks trending right now</p>
+          <h1 className="welcome-title">{title}</h1>
+          <p className="welcome-subtitle">{subtitle}</p>
           
           {loading && (
             <div className="trending-loading">
               <span className="loading-icon">⏳</span>
-              <p>Loading trending tracks...</p>
+              <p>{isSearching ? 'Searching tracks...' : 'Loading trending tracks...'}</p>
             </div>
           )}
           
@@ -84,7 +107,11 @@ function MainHome() {
           {!loading && !error && tracks.length === 0 && (
             <div className="trending-empty">
               <span className="empty-icon">🎵</span>
-              <p>No trending tracks available at the moment</p>
+              <p>
+                {isSearching 
+                  ? `No tracks found for "${searchQuery}"` 
+                  : 'No trending tracks available at the moment'}
+              </p>
             </div>
           )}
         </div>

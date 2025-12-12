@@ -6,9 +6,11 @@ import './TopNav.css';
 /**
  * Top navigation component with search input and profile button
  * Displays search bar and user profile with logout functionality
+ * @param {object} props - Component props
+ * @param {function} props.onSearch - Callback function when search is performed
  */
 // PUBLIC_INTERFACE
-function TopNav() {
+function TopNav({ onSearch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user } = getAuthData();
@@ -17,7 +19,10 @@ function TopNav() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      // Notify parent component of search query
+      if (onSearch) {
+        onSearch(searchQuery.trim());
+      }
     }
   };
 
