@@ -44,8 +44,8 @@ function Register() {
       if (response.access_token && response.user) {
         storeAuthData(response.access_token, response.user);
         
-        // Redirect to home page
-        navigate('/');
+        // Redirect to authenticated home page
+        navigate('/home');
       } else {
         setError('Registration failed. Please try again.');
       }
