@@ -1,6 +1,191 @@
-/* Authentication pages styles */
+/* Authentication pages styles - Spotify Theme */
 
-.auth-container {
+/* Spotify-themed container with dark background */
+.auth-container.spotify-theme {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #121212;
+  padding: 20px;
+}
+
+/* Spotify-themed card with dark surface */
+.auth-card.spotify-card {
+  background-color: #181818;
+  border: none;
+  border-radius: 8px;
+  padding: 48px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Spotify-themed title */
+.auth-title.spotify-title {
+  font-size: 48px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 32px;
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+
+/* Remove subtitle for Spotify theme */
+.auth-subtitle {
+  display: none;
+}
+
+/* Form styling */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.1px;
+}
+
+.form-group input {
+  padding: 14px 16px;
+  font-size: 16px;
+  border: 1px solid #727272;
+  border-radius: 4px;
+  background-color: #121212;
+  color: #ffffff;
+  transition: all 0.2s ease;
+  font-weight: 400;
+}
+
+.form-group input::placeholder {
+  color: #a7a7a7;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #ffffff;
+  background-color: #2a2a2a;
+}
+
+.form-group input:hover {
+  border-color: #b3b3b3;
+}
+
+.form-group input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spotify green button */
+.auth-button.spotify-button {
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000000;
+  background-color: #1DB954;
+  border: none;
+  border-radius: 500px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+  text-transform: none;
+  letter-spacing: 0.1px;
+}
+
+.auth-button.spotify-button:hover:not(:disabled) {
+  background-color: #1ed760;
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+}
+
+.auth-button.spotify-button:active:not(:disabled) {
+  transform: scale(1);
+  background-color: #1aa34a;
+}
+
+.auth-button.spotify-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #1DB954;
+}
+
+/* Spotify error message */
+.error-message.spotify-error {
+  padding: 12px 16px;
+  background-color: rgba(230, 77, 77, 0.15);
+  color: #e64d4d;
+  border: 1px solid rgba(230, 77, 77, 0.3);
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 400;
+}
+
+/* Divider */
+.auth-divider {
+  height: 1px;
+  background-color: #2a2a2a;
+  margin: 32px 0 24px 0;
+}
+
+/* Spotify footer */
+.auth-footer.spotify-footer {
+  text-align: center;
+  margin-top: 0;
+  font-size: 16px;
+  color: #a7a7a7;
+  font-weight: 400;
+}
+
+.auth-footer.spotify-footer a.spotify-link {
+  color: #ffffff;
+  text-decoration: underline;
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+
+.auth-footer.spotify-footer a.spotify-link:hover {
+  color: #1DB954;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .auth-card.spotify-card {
+    padding: 32px 24px;
+  }
+
+  .auth-title.spotify-title {
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+
+  .form-group input {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  .auth-button.spotify-button {
+    padding: 14px 28px;
+    font-size: 14px;
+  }
+
+  .auth-footer.spotify-footer {
+    font-size: 14px;
+  }
+}
+
+/* Legacy styles for Register page - keeping minimal support without Spotify theme */
+.auth-container:not(.spotify-theme) {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -9,7 +194,7 @@
   padding: 20px;
 }
 
-.auth-card {
+.auth-card:not(.spotify-card) {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -19,7 +204,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.auth-title {
+.auth-title:not(.spotify-title) {
   font-size: 32px;
   font-weight: 700;
   color: var(--text-primary);
@@ -34,25 +219,13 @@
   margin-bottom: 32px;
 }
 
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
+.auth-container:not(.spotify-theme) .form-group label {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.form-group input {
+.auth-container:not(.spotify-theme) .form-group input {
   padding: 12px 16px;
   font-size: 14px;
   border: 1px solid var(--border-color);
@@ -62,17 +235,12 @@
   transition: border-color 0.3s ease;
 }
 
-.form-group input:focus {
+.auth-container:not(.spotify-theme) .form-group input:focus {
   outline: none;
   border-color: var(--button-bg);
 }
 
-.form-group input:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.auth-button {
+.auth-button:not(.spotify-button) {
   padding: 14px 24px;
   font-size: 16px;
   font-weight: 600;
@@ -85,22 +253,17 @@
   margin-top: 8px;
 }
 
-.auth-button:hover:not(:disabled) {
+.auth-button:not(.spotify-button):hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.auth-button:active:not(:disabled) {
+.auth-button:not(.spotify-button):active:not(:disabled) {
   transform: translateY(0);
 }
 
-.auth-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error-message {
+.error-message:not(.spotify-error) {
   padding: 12px 16px;
   background-color: rgba(239, 68, 68, 0.1);
   color: #ef4444;
@@ -110,30 +273,30 @@
   text-align: center;
 }
 
-.auth-footer {
+.auth-footer:not(.spotify-footer) {
   text-align: center;
   margin-top: 24px;
   font-size: 14px;
   color: var(--text-primary);
 }
 
-.auth-footer a {
+.auth-footer:not(.spotify-footer) a {
   color: var(--button-bg);
   text-decoration: none;
   font-weight: 600;
 }
 
-.auth-footer a:hover {
+.auth-footer:not(.spotify-footer) a:hover {
   text-decoration: underline;
 }
 
-/* Responsive design */
+/* Responsive design for legacy styles */
 @media (max-width: 768px) {
-  .auth-card {
+  .auth-card:not(.spotify-card) {
     padding: 30px 20px;
   }
 
-  .auth-title {
+  .auth-title:not(.spotify-title) {
     font-size: 28px;
   }
 }
