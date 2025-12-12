@@ -1,5 +1,10 @@
 /* Authentication pages styles - Spotify Theme */
 
+/* Hide navigation bar on auth pages */
+body:has(.auth-container) .nav-bar {
+  display: none;
+}
+
 /* Spotify-themed container with dark background */
 .auth-container.spotify-theme {
   min-height: 100vh;

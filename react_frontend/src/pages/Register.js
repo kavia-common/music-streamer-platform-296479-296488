@@ -57,22 +57,21 @@ function Register() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">Register</h1>
-        <p className="auth-subtitle">Create a new account to get started.</p>
+    <div className="auth-container spotify-theme">
+      <div className="auth-card spotify-card">
+        <h1 className="auth-title spotify-title">Sign up for free to start listening</h1>
         
         <form onSubmit={handleSubmit} className="auth-form">
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className="error-message spotify-error">{error}</div>}
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Email address"
               disabled={loading}
               required
             />
@@ -97,7 +96,7 @@ function Register() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password (min 6 characters)"
+              placeholder="Password"
               disabled={loading}
               required
             />
@@ -105,15 +104,17 @@ function Register() {
 
           <button 
             type="submit" 
-            className="auth-button"
+            className="auth-button spotify-button"
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Register'}
+            {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
-        <p className="auth-footer">
-          Already have an account? <Link to="/login">Login here</Link>
+        <div className="auth-divider"></div>
+
+        <p className="auth-footer spotify-footer">
+          Already have an account? <Link to="/login" className="spotify-link">Log in here</Link>
         </p>
       </div>
     </div>
