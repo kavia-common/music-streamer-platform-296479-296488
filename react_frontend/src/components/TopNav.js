@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthData, clearAuthData } from '../api/apiClient';
 import './TopNav.css';
@@ -15,6 +15,7 @@ function TopNav({ onSearch }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user } = getAuthData();
   const navigate = useNavigate();
+  const profileContainerRef = useRef(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -31,6 +32,22 @@ function TopNav({ onSearch }) {
     navigate('/login');
   };
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileContainerRef.current && !profileContainerRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showProfileMenu]);
+
   return (
     <div className="top-nav">
       <form className="search-container" onSubmit={handleSearch}>
@@ -44,23 +61,26 @@ function TopNav({ onSearch }) {
         />
       </form>
 
-      <div className="profile-container">
+      <div className="profile-container" ref={profileContainerRef}>
         <button
           className="profile-button"
           onClick={() => setShowProfileMenu(!showProfileMenu)}
+          aria-expanded={showProfileMenu}
+          aria-haspopup="true"
         >
           <span className="profile-icon">👤</span>
           <span className="profile-name">{user?.email || 'User'}</span>
         </button>
 
         {showProfileMenu && (
-          <div className="profile-menu">
-            <div className="profile-menu-item profile-info">
+          <div className="profile-menu" role="menu">
+            <div className="profile-menu-item profile-info" role="menuitem">
               {user?.email || 'User'}
             </div>
             <div className="profile-menu-divider"></div>
             <button 
               className="profile-menu-item" 
+              role="menuitem"
               onClick={() => {
                 setShowProfileMenu(false);
                 navigate('/profile');
@@ -68,7 +88,11 @@ function TopNav({ onSearch }) {
             >
               Profile
             </button>
-            <button className="profile-menu-item" onClick={handleLogout}>
+            <button 
+              className="profile-menu-item" 
+              role="menuitem"
+              onClick={handleLogout}
+            >
               Logout
             </button>
           </div>
