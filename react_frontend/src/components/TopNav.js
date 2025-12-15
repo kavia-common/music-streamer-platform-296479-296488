@@ -59,6 +59,15 @@ function TopNav({ onSearch }) {
               {user?.email || 'User'}
             </div>
             <div className="profile-menu-divider"></div>
+            <button 
+              className="profile-menu-item" 
+              onClick={() => {
+                setShowProfileMenu(false);
+                navigate('/profile');
+              }}
+            >
+              Profile
+            </button>
             <button className="profile-menu-item" onClick={handleLogout}>
               Logout
             </button>

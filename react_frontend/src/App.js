@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MainHome from './pages/MainHome';
+import Profile from './pages/Profile';
 import PrivateRoute from './components/PrivateRoute';
 import { isAuthenticated } from './api/apiClient';
 import './App.css';
@@ -57,6 +58,14 @@ function App() {
           element={
             <PrivateRoute>
               <MainHome />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <PrivateRoute>
+              <Profile />
             </PrivateRoute>
           } 
         />
