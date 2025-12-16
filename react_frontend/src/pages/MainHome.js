@@ -21,7 +21,11 @@ const APP_NAME = process.env.REACT_APP_AUDIUS_APP_NAME || 'spotify-clone';
 function MainHome() {
   const { tracks: trendingTracks, loading: trendingLoading, error: trendingError } = useAudiusTrending();
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [currentTrackId, setCurrentTrackId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Map to store Audius track ID -> backend track UUID
+  const trackIdMapRef = useRef({});
   
   // Use search hook with current query
   const { tracks: searchTracks, loading: searchLoading, error: searchError } = useAudiusSearch(searchQuery);
@@ -32,6 +36,9 @@ function MainHome() {
    */
   const handleTrackClick = (track) => {
     setCurrentTrack(track);
+    // Set the backend track_id if we have it mapped, otherwise null
+    const backendTrackId = trackIdMapRef.current[track.id] || null;
+    setCurrentTrackId(backendTrackId);
   };
 
   /**
@@ -122,7 +129,17 @@ function MainHome() {
       };
 
       // Add track to playlist
-      await addTrackToPlaylist(playlist.id, trackData);
+      const response = await addTrackToPlaylist(playlist.id, trackData);
+      
+      // Store the backend track_id mapping if returned
+      if (response?.playlist_item?.tracks?.id) {
+        trackIdMapRef.current[track.id] = response.playlist_item.tracks.id;
+        
+        // If this is the currently playing track, update its track_id
+        if (currentTrack && currentTrack.id === track.id) {
+          setCurrentTrackId(response.playlist_item.tracks.id);
+        }
+      }
       
       // Show success message
       showSuccess(`"${track.title}" added to "${playlist.name}"`);
@@ -296,7 +313,7 @@ function MainHome() {
         </div>
       </div>
       
-      <BottomPlayer currentTrack={currentTrack} />
+      <BottomPlayer currentTrack={currentTrack} currentTrackId={currentTrackId} />
     </div>
   );
 }

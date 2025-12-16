@@ -241,3 +241,66 @@ export async function addTrackToPlaylist(playlistId, trackData) {
     body: JSON.stringify(payload),
   });
 }
+
+/**
+ * Fetches all favorites for the authenticated user
+ * @returns {Promise<object>} Object containing favorites array with track metadata
+ */
+// PUBLIC_INTERFACE
+export async function getFavorites() {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest('/api/favorites', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+}
+
+/**
+ * Adds a track to favorites
+ * @param {string} trackId - UUID of the track to add to favorites
+ * @returns {Promise<object>} Response with favorite data
+ */
+// PUBLIC_INTERFACE
+export async function addFavorite(trackId) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest('/api/favorites', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ track_id: trackId })
+  });
+}
+
+/**
+ * Removes a track from favorites
+ * @param {string} trackId - UUID of the track to remove from favorites
+ * @returns {Promise<object>} Response with success message
+ */
+// PUBLIC_INTERFACE
+export async function removeFavorite(trackId) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest(`/api/favorites/${trackId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+}

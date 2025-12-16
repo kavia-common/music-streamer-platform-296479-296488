@@ -1,4 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getFavorites, addFavorite, removeFavorite, isAuthenticated } from '../api/apiClient';
+import { showSuccess, showError, showInfo } from '../utils/toast';
 import './BottomPlayer.css';
 
 // Audius app name from environment variable, fallback to 'spotify-clone'
@@ -7,15 +10,44 @@ const APP_NAME = process.env.REACT_APP_AUDIUS_APP_NAME || 'spotify-clone';
 /**
  * Bottom player component displaying current song and playback controls
  * Shows song information from Audius track and basic playback controls
+ * Integrates with favorites API for heart button functionality
  * @param {object} props - Component props
  * @param {object} props.currentTrack - The currently selected track from Audius
+ * @param {string} props.currentTrackId - The UUID track_id from backend (if track exists in DB)
  */
 // PUBLIC_INTERFACE
-function BottomPlayer({ currentTrack }) {
+function BottomPlayer({ currentTrack, currentTrackId }) {
   const audioRef = useRef(null);
+  const navigate = useNavigate();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  // Fetch favorites and determine if current track is favorited
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      if (!isAuthenticated() || !currentTrackId) {
+        setIsFavorite(false);
+        return;
+      }
+
+      try {
+        const response = await getFavorites();
+        const favorites = response.favorites || [];
+        
+        // Check if current track is in favorites
+        const isFav = favorites.some(fav => fav.track_id === currentTrackId);
+        setIsFavorite(isFav);
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+        // Don't show error toast on initial load, just silently fail
+      }
+    };
+
+    fetchFavoriteStatus();
+  }, [currentTrackId]);
 
   // Update audio source when track changes
   useEffect(() => {
@@ -49,6 +81,65 @@ function BottomPlayer({ currentTrack }) {
             setIsPlaying(false);
           });
       }
+    }
+  };
+
+  // Handle favorite toggle
+  const handleFavoriteToggle = async () => {
+    // Check authentication first
+    if (!isAuthenticated()) {
+      showInfo('Please log in to add favorites');
+      navigate('/login');
+      return;
+    }
+
+    // Check if we have a valid track ID
+    if (!currentTrackId) {
+      showError('Cannot favorite this track - track not saved in database');
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (favoriteLoading) {
+      return;
+    }
+
+    // Optimistically update UI
+    const previousState = isFavorite;
+    setIsFavorite(!isFavorite);
+    setFavoriteLoading(true);
+
+    try {
+      if (previousState) {
+        // Remove from favorites
+        await removeFavorite(currentTrackId);
+        showSuccess('Removed from favorites');
+      } else {
+        // Add to favorites
+        await addFavorite(currentTrackId);
+        showSuccess('Added to favorites');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      
+      // Revert optimistic update on error
+      setIsFavorite(previousState);
+      
+      // Handle 401 Unauthorized
+      if (error.message && error.message.includes('401')) {
+        showError('Session expired. Please log in again.');
+        navigate('/login');
+      } else if (error.message && error.message.includes('404')) {
+        showError('Track not found in database');
+      } else if (error.message && error.message.includes('409')) {
+        // Track already in favorites - sync state
+        setIsFavorite(true);
+        showInfo('Track already in favorites');
+      } else {
+        showError('Failed to update favorites');
+      }
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -109,8 +200,14 @@ function BottomPlayer({ currentTrack }) {
               <div className="song-title">{currentTrack.title || 'Unknown Track'}</div>
               <div className="song-artist">{currentTrack.user?.name || 'Unknown Artist'}</div>
             </div>
-            <button className="like-button" aria-label="Like song">
-              ♡
+            <button 
+              className={`like-button ${isFavorite ? 'active' : ''}`}
+              onClick={handleFavoriteToggle}
+              disabled={favoriteLoading}
+              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              aria-pressed={isFavorite}
+            >
+              {isFavorite ? '❤️' : '♡'}
             </button>
           </>
         ) : (

@@ -161,12 +161,14 @@ function PlaylistView() {
           
           {!loading && !error && playlist && (
             <>
+              {/* Playlist Header */}
               <div className="playlist-header">
                 <div className="playlist-header-icon">📻</div>
                 <div className="playlist-header-info">
                   <div className="playlist-label">PLAYLIST</div>
                   <h1 className="playlist-title">{playlist.name}</h1>
                   
+                  {/* Description Editor */}
                   <div className="playlist-description-section">
                     {isEditingDescription ? (
                       <div className="description-editor">
@@ -211,6 +213,7 @@ function PlaylistView() {
                     )}
                   </div>
                   
+                  {/* Public/Private Toggle */}
                   <div className="playlist-visibility-section">
                     <label className="visibility-toggle">
                       <span className="visibility-label">
@@ -233,6 +236,7 @@ function PlaylistView() {
                 </div>
               </div>
               
+              {/* Playlist Items */}
               <div className="playlist-tracks-section">
                 {items.length === 0 ? (
                   <div className="playlist-empty">

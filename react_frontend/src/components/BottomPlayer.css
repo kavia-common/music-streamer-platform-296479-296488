@@ -67,12 +67,27 @@
   color: #b3b3b3;
   font-size: 16px;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
   padding: 8px;
 }
 
 .like-button:hover {
   color: #ffffff;
+  transform: scale(1.1);
+}
+
+.like-button.active {
+  color: #EF4444;
+}
+
+.like-button.active:hover {
+  color: #DC2626;
+}
+
+.like-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .no-song {
