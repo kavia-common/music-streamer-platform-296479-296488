@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { usePlaylists } from '../hooks/usePlaylists';
-import { createPlaylist } from '../api/apiClient';
+import CreatePlaylistPopover from './CreatePlaylistPopover';
 import './Sidebar.css';
 
 /**
@@ -11,36 +11,36 @@ import './Sidebar.css';
 // PUBLIC_INTERFACE
 function Sidebar() {
   const { playlists, loading, refetch } = usePlaylists();
-  const [isCreating, setIsCreating] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const createButtonRef = useRef(null);
+  const navigate = useNavigate();
 
   /**
    * Handle create playlist button click
-   * Prompts user for playlist name and creates the playlist
+   * Opens the popover for creating a new playlist
    */
-  const handleCreatePlaylist = async () => {
-    const playlistName = prompt('Enter playlist name:');
-    
-    if (!playlistName || playlistName.trim().length === 0) {
-      return; // User cancelled or entered empty name
-    }
+  const handleCreatePlaylist = () => {
+    setIsPopoverOpen(true);
+  };
 
-    if (playlistName.length > 100) {
-      alert('Playlist name must be 100 characters or less');
-      return;
-    }
+  /**
+   * Handle popover close
+   */
+  const handlePopoverClose = () => {
+    setIsPopoverOpen(false);
+  };
 
-    setIsCreating(true);
+  /**
+   * Handle successful playlist creation
+   * Refetches playlists and navigates to the new playlist
+   */
+  const handlePlaylistCreated = async (newPlaylist) => {
+    // Refetch playlists to update the sidebar
+    await refetch();
     
-    try {
-      await createPlaylist(playlistName.trim());
-      // Refetch playlists to update the sidebar
-      await refetch();
-      alert('Playlist created successfully!');
-    } catch (error) {
-      console.error('Error creating playlist:', error);
-      alert(`Failed to create playlist: ${error.message}`);
-    } finally {
-      setIsCreating(false);
+    // Navigate to the newly created playlist
+    if (newPlaylist && newPlaylist.id) {
+      navigate(`/playlists/${newPlaylist.id}`);
     }
   };
 
@@ -72,14 +72,25 @@ function Sidebar() {
       <div className="sidebar-playlists">
         <div className="playlists-header">
           <span>Playlists</span>
-          <button 
-            className="create-playlist-btn" 
-            onClick={handleCreatePlaylist}
-            disabled={isCreating}
-            title="Create a new playlist"
-          >
-            {isCreating ? '...' : '+'}
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button 
+              ref={createButtonRef}
+              className="create-playlist-btn" 
+              onClick={handleCreatePlaylist}
+              title="Create a new playlist"
+              aria-label="Create a new playlist"
+              aria-haspopup="dialog"
+              aria-expanded={isPopoverOpen}
+            >
+              +
+            </button>
+            <CreatePlaylistPopover
+              isOpen={isPopoverOpen}
+              onClose={handlePopoverClose}
+              onSuccess={handlePlaylistCreated}
+              anchorRef={createButtonRef}
+            />
+          </div>
         </div>
         {loading ? (
           <div className="playlists-loading">Loading playlists...</div>

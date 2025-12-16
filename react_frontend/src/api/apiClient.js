@@ -122,14 +122,24 @@ export function isAuthenticated() {
 /**
  * Creates a new playlist for the authenticated user
  * @param {string} name - Playlist name
+ * @param {string} description - Optional playlist description
+ * @param {boolean} is_public - Optional public/private status (default true)
  * @returns {Promise<object>} Created playlist data
  */
 // PUBLIC_INTERFACE
-export async function createPlaylist(name) {
+export async function createPlaylist(name, description = '', is_public = true) {
   const { accessToken } = getAuthData();
   
   if (!accessToken) {
     throw new Error('Not authenticated');
+  }
+
+  const payload = { name };
+  if (description !== undefined && description !== null) {
+    payload.description = description;
+  }
+  if (is_public !== undefined && is_public !== null) {
+    payload.is_public = is_public;
   }
 
   return apiRequest('/api/playlists', {
@@ -137,7 +147,7 @@ export async function createPlaylist(name) {
     headers: {
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(payload),
   });
 }
 
