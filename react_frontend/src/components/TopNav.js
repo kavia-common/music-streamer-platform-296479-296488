@@ -61,7 +61,7 @@ function TopNav({ onSearch }) {
         />
       </form>
 
-      <div className="profile-container" ref={profileContainerRef}>
+      <div className="profile-dropdown" ref={profileContainerRef}>
         <button
           className="profile-button"
           onClick={() => setShowProfileMenu(!showProfileMenu)}

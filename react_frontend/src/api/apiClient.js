@@ -118,3 +118,25 @@ export function isAuthenticated() {
   const { accessToken } = getAuthData();
   return !!accessToken;
 }
+
+/**
+ * Creates a new playlist for the authenticated user
+ * @param {string} name - Playlist name
+ * @returns {Promise<object>} Created playlist data
+ */
+// PUBLIC_INTERFACE
+export async function createPlaylist(name) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest('/api/playlists', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({ name }),
+  });
+}
