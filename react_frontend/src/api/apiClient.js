@@ -140,3 +140,40 @@ export async function createPlaylist(name) {
     body: JSON.stringify({ name }),
   });
 }
+
+/**
+ * Adds a track to a playlist
+ * @param {string} playlistId - Playlist ID
+ * @param {object} trackData - Track data object
+ * @param {string} trackData.title - Track title
+ * @param {number} trackData.duration_seconds - Track duration in seconds
+ * @param {string} trackData.audius_track_id - Audius track ID
+ * @param {string} trackData.audius_stream_url - Audius stream URL
+ * @returns {Promise<object>} Response with success message
+ */
+// PUBLIC_INTERFACE
+export async function addTrackToPlaylist(playlistId, trackData) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  // Validate required fields
+  if (!trackData.title || !trackData.duration_seconds || !trackData.audius_track_id || !trackData.audius_stream_url) {
+    throw new Error('Missing required track data fields');
+  }
+
+  return apiRequest(`/api/playlists/${playlistId}/items`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      title: trackData.title,
+      duration_seconds: trackData.duration_seconds,
+      audius_track_id: trackData.audius_track_id,
+      audius_stream_url: trackData.audius_stream_url
+    }),
+  });
+}

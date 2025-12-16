@@ -5,8 +5,13 @@ import BottomPlayer from '../components/BottomPlayer';
 import { useAudiusTrending } from '../hooks/useAudiusTrending';
 import { useAudiusSearch } from '../hooks/useAudiusSearch';
 import { usePlaylists } from '../hooks/usePlaylists';
+import { addTrackToPlaylist } from '../api/apiClient';
+import { showSuccess, showError } from '../utils/toast';
 import './MainHome.css';
 import './AddToPlaylist.css';
+
+// Audius app name from environment variable, fallback to 'spotify-clone'
+const APP_NAME = process.env.REACT_APP_AUDIUS_APP_NAME || 'spotify-clone';
 
 /**
  * Main authenticated home page with Spotify-like layout
@@ -49,6 +54,7 @@ function MainHome() {
 
   // Popover state and refs
   const [openPopoverForTrackId, setOpenPopoverForTrackId] = useState(null);
+  const [addingToPlaylist, setAddingToPlaylist] = useState(false);
   const popoverRefs = useRef({});
 
   // playlists data (non-blocking; existing hook will try to fetch if authenticated)
@@ -85,12 +91,61 @@ function MainHome() {
     }
   };
 
-  const handlePlaylistSelect = (e) => {
-    // UI only: do not wire add action
+  const handlePlaylistSelect = async (e, playlist, track) => {
     e.stopPropagation();
     e.preventDefault();
-    // Close after selection; hook up backend action here in future
-    setOpenPopoverForTrackId(null);
+    
+    // Validate track data
+    if (!track || !track.id || !track.title) {
+      showError('Invalid track data');
+      return;
+    }
+
+    // Prevent multiple simultaneous requests
+    if (addingToPlaylist) {
+      return;
+    }
+
+    setAddingToPlaylist(true);
+    
+    try {
+      // Construct stream URL
+      const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
+      
+      // Prepare track data
+      const trackData = {
+        title: track.title,
+        duration_seconds: track.duration || 0,
+        audius_track_id: track.id,
+        audius_stream_url: streamUrl
+      };
+
+      // Add track to playlist
+      await addTrackToPlaylist(playlist.id, trackData);
+      
+      // Show success message
+      showSuccess(`"${track.title}" added to "${playlist.name}"`);
+      
+      // Close popover
+      setOpenPopoverForTrackId(null);
+    } catch (error) {
+      console.error('Error adding track to playlist:', error);
+      
+      // Handle duplicate track gracefully
+      if (error.message && (
+        error.message.includes('already exists') || 
+        error.message.includes('duplicate') ||
+        error.message.includes('already in playlist')
+      )) {
+        showSuccess(`"${track.title}" is already in "${playlist.name}"`);
+        setOpenPopoverForTrackId(null);
+      } else {
+        // Show error for other failures
+        showError(error.message || 'Failed to add track to playlist');
+      }
+    } finally {
+      setAddingToPlaylist(false);
+    }
   };
 
   return (
@@ -160,6 +215,7 @@ function MainHome() {
                         aria-label="Add to playlist"
                         aria-haspopup="menu"
                         aria-expanded={isOpen}
+                        disabled={addingToPlaylist}
                         onClick={(e) => togglePopover(e, trackId)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -167,7 +223,7 @@ function MainHome() {
                           }
                         }}
                       >
-                        +
+                        {addingToPlaylist ? '...' : '+'}
                       </button>
                       {isOpen && (
                         <div
@@ -175,8 +231,11 @@ function MainHome() {
                           role="menu"
                           tabIndex={-1}
                           onKeyDown={handlePopoverKeyDown}
+                          style={{ opacity: addingToPlaylist ? 0.6 : 1, pointerEvents: addingToPlaylist ? 'none' : 'auto' }}
                         >
-                          <div className="playlist-popover-header">Add to playlist</div>
+                          <div className="playlist-popover-header">
+                            {addingToPlaylist ? 'Adding track...' : 'Add to playlist'}
+                          </div>
                           
                           {playlistsLoading && (
                             <div className="playlist-popover-loading">Loading playlists...</div>
@@ -200,7 +259,8 @@ function MainHome() {
                                         type="button"
                                         className="playlist-popover-item-btn"
                                         role="menuitem"
-                                        onClick={handlePlaylistSelect}
+                                        disabled={addingToPlaylist}
+                                        onClick={(e) => handlePlaylistSelect(e, p, track)}
                                       >
                                         <span>📻</span>
                                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

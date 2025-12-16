@@ -34,6 +34,12 @@
   outline-offset: 2px;
 }
 
+.add-to-playlist-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #6b7280;
+}
+
 /* Popover panel */
 .playlist-popover {
   position: absolute;
@@ -93,6 +99,11 @@
 .playlist-popover-item-btn:focus {
   outline: 2px solid #2563EB;
   outline-offset: 2px;
+}
+
+.playlist-popover-item-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .playlist-popover-empty,
