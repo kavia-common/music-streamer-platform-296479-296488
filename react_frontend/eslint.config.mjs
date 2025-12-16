@@ -14,7 +14,8 @@ export default [
         document: true,
         window: true,
         test: true,
-        expect: true
+        expect: true,
+        console: true
       }
     },
     rules: {

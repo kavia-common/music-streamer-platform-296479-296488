@@ -5,7 +5,7 @@ import './CreatePlaylistPopover.css';
 
 /**
  * Popover component for creating a new playlist
- * Displays a form anchored to the create button with name, description, and is_public fields
+ * Displays a simple form anchored to the create button with only a name field
  * @param {object} props - Component props
  * @param {boolean} props.isOpen - Whether the popover is open
  * @param {function} props.onClose - Callback to close the popover
@@ -15,8 +15,6 @@ import './CreatePlaylistPopover.css';
 // PUBLIC_INTERFACE
 function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const popoverRef = useRef(null);
@@ -97,13 +95,12 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
     setIsSubmitting(true);
 
     try {
-      const result = await createPlaylist(name.trim(), description.trim(), isPublic);
+      // Call createPlaylist with just the name; defaults will be used for description and is_public
+      const result = await createPlaylist(name.trim());
       showSuccess(`Playlist "${name}" created successfully!`);
       
       // Reset form
       setName('');
-      setDescription('');
-      setIsPublic(true);
       setErrors({});
       
       // Call success callback with the new playlist
@@ -126,8 +123,6 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
    */
   const handleCancel = () => {
     setName('');
-    setDescription('');
-    setIsPublic(true);
     setErrors({});
     onClose();
   };
@@ -170,35 +165,6 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
               {errors.name}
             </span>
           )}
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="playlist-description">Description</label>
-          <textarea
-            id="playlist-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add an optional description..."
-            disabled={isSubmitting}
-            rows={3}
-            maxLength={500}
-          />
-        </div>
-
-        <div className="form-field form-field-checkbox">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              disabled={isSubmitting}
-              aria-label="Make playlist public"
-            />
-            <span className="checkbox-text">Make public</span>
-          </label>
-          <span className="field-hint">
-            {isPublic ? 'Anyone can view this playlist' : 'Only you can view this playlist'}
-          </span>
         </div>
 
         <div className="popover-actions">
