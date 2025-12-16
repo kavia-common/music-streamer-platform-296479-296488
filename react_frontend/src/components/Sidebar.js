@@ -87,9 +87,13 @@ function Sidebar() {
           <ul className="playlists-list">
             {playlists.map((playlist) => (
               <li key={playlist.id}>
-                <span className="playlist-item-non-clickable">
+                <Link 
+                  to={`/playlists/${playlist.id}`} 
+                  className="playlist-item-link"
+                >
+                  <span className="playlist-icon">📻</span>
                   {playlist.name}
-                </span>
+                </Link>
               </li>
             ))}
           </ul>

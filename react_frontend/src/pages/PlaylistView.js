@@ -1,0 +1,301 @@
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import TopNav from '../components/TopNav';
+import BottomPlayer from '../components/BottomPlayer';
+import { getPlaylistWithItems, updatePlaylist } from '../api/apiClient';
+import { showSuccess, showError } from '../utils/toast';
+import './PlaylistView.css';
+
+// Audius app name from environment variable
+const APP_NAME = process.env.REACT_APP_AUDIUS_APP_NAME || 'spotify-clone';
+
+/**
+ * PlaylistView component for displaying playlist details and tracks
+ * Allows editing description and is_public status
+ */
+// PUBLIC_INTERFACE
+function PlaylistView() {
+  const { id } = useParams();
+  const [playlist, setPlaylist] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentTrack, setCurrentTrack] = useState(null);
+  
+  // Edit mode states
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  /**
+   * Fetch playlist data and items
+   */
+  const fetchPlaylist = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const data = await getPlaylistWithItems(id);
+      setPlaylist(data.playlist);
+      setItems(data.items || []);
+      setEditedDescription(data.playlist.description || '');
+    } catch (err) {
+      console.error('Error fetching playlist:', err);
+      setError(err.message || 'Failed to load playlist');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchPlaylist();
+    }
+  }, [id]);
+
+  /**
+   * Handle track click for playback
+   */
+  const handleTrackClick = (item) => {
+    if (!item.track) return;
+    
+    // Convert to format expected by BottomPlayer
+    const track = {
+      id: item.track.audius_track_id,
+      title: item.track.title,
+      duration: item.track.duration_seconds,
+      user: { name: 'Unknown Artist' }, // We don't have artist info in our DB
+      artwork: null
+    };
+    
+    setCurrentTrack(track);
+  };
+
+  /**
+   * Start editing description
+   */
+  const handleStartEditDescription = () => {
+    setEditedDescription(playlist.description || '');
+    setIsEditingDescription(true);
+  };
+
+  /**
+   * Cancel editing description
+   */
+  const handleCancelEditDescription = () => {
+    setEditedDescription(playlist.description || '');
+    setIsEditingDescription(false);
+  };
+
+  /**
+   * Save description changes
+   */
+  const handleSaveDescription = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      const result = await updatePlaylist(id, { description: editedDescription });
+      setPlaylist(result.playlist);
+      setIsEditingDescription(false);
+      showSuccess('Description updated successfully');
+    } catch (err) {
+      console.error('Error updating description:', err);
+      showError(err.message || 'Failed to update description');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /**
+   * Toggle public/private status
+   */
+  const handleTogglePublic = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      const result = await updatePlaylist(id, { is_public: !playlist.is_public });
+      setPlaylist(result.playlist);
+      showSuccess(`Playlist is now ${result.playlist.is_public ? 'public' : 'private'}`);
+    } catch (err) {
+      console.error('Error updating visibility:', err);
+      showError(err.message || 'Failed to update visibility');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /**
+   * Format duration from seconds to MM:SS
+   */
+  const formatDuration = (seconds) => {
+    if (!seconds) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="main-home">
+      <Sidebar />
+      
+      <div className="main-content">
+        <TopNav />
+        
+        <div className="content-area playlist-view-content">
+          {loading && (
+            <div className="playlist-loading">
+              <span className="loading-icon">⏳</span>
+              <p>Loading playlist...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="playlist-error">
+              <span className="error-icon">⚠️</span>
+              <p>{error}</p>
+            </div>
+          )}
+          
+          {!loading && !error && playlist && (
+            <>
+              {/* Playlist Header */}
+              <div className="playlist-header">
+                <div className="playlist-header-icon">📻</div>
+                <div className="playlist-header-info">
+                  <div className="playlist-label">PLAYLIST</div>
+                  <h1 className="playlist-title">{playlist.name}</h1>
+                  
+                  {/* Description Editor */}
+                  <div className="playlist-description-section">
+                    {isEditingDescription ? (
+                      <div className="description-editor">
+                        <textarea
+                          className="description-textarea"
+                          value={editedDescription}
+                          onChange={(e) => setEditedDescription(e.target.value)}
+                          placeholder="Add a description..."
+                          rows={3}
+                          disabled={isSaving}
+                        />
+                        <div className="description-editor-actions">
+                          <button 
+                            className="btn-save"
+                            onClick={handleSaveDescription}
+                            disabled={isSaving}
+                          >
+                            {isSaving ? 'Saving...' : 'Save'}
+                          </button>
+                          <button 
+                            className="btn-cancel"
+                            onClick={handleCancelEditDescription}
+                            disabled={isSaving}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="description-display">
+                        <p className="playlist-description">
+                          {playlist.description || 'No description'}
+                        </p>
+                        <button 
+                          className="btn-edit"
+                          onClick={handleStartEditDescription}
+                          disabled={isSaving}
+                        >
+                          ✏️ Edit
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Public/Private Toggle */}
+                  <div className="playlist-visibility-section">
+                    <label className="visibility-toggle">
+                      <span className="visibility-label">
+                        {playlist.is_public ? '🌐 Public' : '🔒 Private'}
+                      </span>
+                      <button
+                        className={`toggle-switch ${playlist.is_public ? 'active' : ''}`}
+                        onClick={handleTogglePublic}
+                        disabled={isSaving}
+                        aria-label={`Make playlist ${playlist.is_public ? 'private' : 'public'}`}
+                      >
+                        <span className="toggle-slider"></span>
+                      </button>
+                    </label>
+                  </div>
+                  
+                  <div className="playlist-meta">
+                    {items.length} {items.length === 1 ? 'track' : 'tracks'}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Playlist Items */}
+              <div className="playlist-tracks-section">
+                {items.length === 0 ? (
+                  <div className="playlist-empty">
+                    <span className="empty-icon">🎵</span>
+                    <p>No tracks in this playlist yet</p>
+                    <p className="empty-hint">Add tracks from the home page</p>
+                  </div>
+                ) : (
+                  <div className="playlist-tracks">
+                    <div className="tracks-header">
+                      <div className="track-col-number">#</div>
+                      <div className="track-col-title">TITLE</div>
+                      <div className="track-col-duration">DURATION</div>
+                      <div className="track-col-added">ADDED</div>
+                    </div>
+                    <div className="tracks-list">
+                      {items.map((item, index) => {
+                        if (!item.track) return null;
+                        
+                        return (
+                          <div 
+                            key={item.id}
+                            className="track-row"
+                            onClick={() => handleTrackClick(item)}
+                          >
+                            <div className="track-col-number">{index + 1}</div>
+                            <div className="track-col-title">
+                              <div className="track-title-text">{item.track.title}</div>
+                              <a 
+                                href={item.track.audius_stream_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="track-stream-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                🔗 Stream
+                              </a>
+                            </div>
+                            <div className="track-col-duration">
+                              {formatDuration(item.track.duration_seconds)}
+                            </div>
+                            <div className="track-col-added">
+                              {new Date(item.added_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <BottomPlayer currentTrack={currentTrack} />
+    </div>
+  );
+}
+
+export default PlaylistView;

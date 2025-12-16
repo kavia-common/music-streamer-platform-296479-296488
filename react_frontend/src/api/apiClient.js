@@ -142,6 +142,52 @@ export async function createPlaylist(name) {
 }
 
 /**
+ * Fetches a playlist with its items (tracks)
+ * @param {string} playlistId - Playlist ID
+ * @returns {Promise<object>} Playlist data with items array
+ */
+// PUBLIC_INTERFACE
+export async function getPlaylistWithItems(playlistId) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest(`/api/playlists/${playlistId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
+}
+
+/**
+ * Updates a playlist's description and/or is_public status
+ * @param {string} playlistId - Playlist ID
+ * @param {object} updates - Update data object
+ * @param {string} updates.description - Optional playlist description
+ * @param {boolean} updates.is_public - Optional public/private status
+ * @returns {Promise<object>} Updated playlist data
+ */
+// PUBLIC_INTERFACE
+export async function updatePlaylist(playlistId, updates) {
+  const { accessToken } = getAuthData();
+  
+  if (!accessToken) {
+    throw new Error('Not authenticated');
+  }
+
+  return apiRequest(`/api/playlists/${playlistId}`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(updates)
+  });
+}
+
+/**
  * Adds a track to a playlist
  * @param {string} playlistId - Playlist ID
  * @param {object} trackData - Track data object

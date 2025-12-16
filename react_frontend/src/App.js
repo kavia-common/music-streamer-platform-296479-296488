@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MainHome from './pages/MainHome';
 import Profile from './pages/Profile';
+import PlaylistView from './pages/PlaylistView';
 import PrivateRoute from './components/PrivateRoute';
 import { isAuthenticated } from './api/apiClient';
 import './App.css';
@@ -54,10 +55,10 @@ function App() {
           } 
         />
         <Route 
-          path="/playlist/:id" 
+          path="/playlists/:id" 
           element={
             <PrivateRoute>
-              <MainHome />
+              <PlaylistView />
             </PrivateRoute>
           } 
         />

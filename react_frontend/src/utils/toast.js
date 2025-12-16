@@ -1,88 +1,72 @@
 /**
- * Simple toast notification system
- * Provides success, error, and info toast messages
+ * Simple toast notification utility
+ * Displays temporary success/error messages to the user
  */
 
+// Toast container management
 let toastContainer = null;
-let toastCounter = 0;
 
 /**
- * Initialize toast container if not already present
+ * Initialize toast container if it doesn't exist
  */
+// PUBLIC_INTERFACE
 function initToastContainer() {
-  if (toastContainer) return;
-  
-  toastContainer = document.createElement('div');
-  toastContainer.id = 'toast-container';
-  toastContainer.style.cssText = `
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 400px;
-  `;
-  document.body.appendChild(toastContainer);
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+  return toastContainer;
 }
 
 /**
- * Show a toast notification
- * @param {string} message - Toast message
- * @param {string} type - Toast type: 'success', 'error', 'info'
- * @param {number} duration - Duration in milliseconds
+ * Show a toast message
+ * @param {string} message - Message to display
+ * @param {string} type - Type of toast ('success' or 'error')
+ * @param {number} duration - Duration in milliseconds (default 3000)
  */
 // PUBLIC_INTERFACE
-export function showToast(message, type = 'info', duration = 3000) {
-  initToastContainer();
+function showToast(message, type = 'info', duration = 3000) {
+  const container = initToastContainer();
   
-  const toastId = `toast-${toastCounter++}`;
   const toast = document.createElement('div');
-  toast.id = toastId;
-  
-  const colors = {
-    success: { bg: '#1DB954', border: '#1aa34a', icon: '✓' },
-    error: { bg: '#EF4444', border: '#dc2626', icon: '✕' },
-    info: { bg: '#2563EB', border: '#1d4ed8', icon: 'ℹ' }
-  };
-  
-  const color = colors[type] || colors.info;
-  
   toast.style.cssText = `
-    background-color: ${color.bg};
+    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#2563EB'};
     color: white;
-    padding: 14px 18px;
+    padding: 12px 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-size: 14px;
     font-weight: 500;
+    max-width: 300px;
+    word-wrap: break-word;
+    pointer-events: auto;
     animation: slideIn 0.3s ease-out;
-    border: 1px solid ${color.border};
-    min-width: 280px;
+    opacity: 1;
+    transition: opacity 0.3s;
   `;
   
-  toast.innerHTML = `
-    <span style="font-size: 18px; font-weight: 700;">${color.icon}</span>
-    <span style="flex: 1;">${message}</span>
-    <button 
-      onclick="this.parentElement.remove()" 
-      style="background: transparent; border: none; color: white; font-size: 18px; cursor: pointer; padding: 0; margin-left: 8px; line-height: 1;"
-      aria-label="Close"
-    >×</button>
-  `;
-  
-  toastContainer.appendChild(toast);
+  toast.textContent = message;
+  container.appendChild(toast);
   
   // Auto-remove after duration
   setTimeout(() => {
-    if (toast.parentElement) {
-      toast.style.animation = 'slideOut 0.3s ease-in';
-      setTimeout(() => toast.remove(), 300);
-    }
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
   }, duration);
 }
 
@@ -101,7 +85,7 @@ export function showSuccess(message) {
  */
 // PUBLIC_INTERFACE
 export function showError(message) {
-  showToast(message, 'error', 4000);
+  showToast(message, 'error');
 }
 
 /**
@@ -113,29 +97,20 @@ export function showInfo(message) {
   showToast(message, 'info');
 }
 
-// Add animations to document
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes slideIn {
-    from {
-      transform: translateX(400px);
-      opacity: 0;
+// Add animation keyframes to document
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(400px);
-      opacity: 0;
-    }
-  }
-`;
-document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
+}
