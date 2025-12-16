@@ -42,7 +42,8 @@
 
 .track-item {
   display: grid;
-  grid-template-columns: 40px 56px 1fr 80px 120px;
+  /* add a column for the + button at the end */
+  grid-template-columns: 40px 56px 1fr 80px 120px 40px;
   gap: 16px;
   align-items: center;
   padding: 12px 16px;
@@ -260,7 +261,8 @@
   }
 
   .track-item {
-    grid-template-columns: 40px 48px 1fr 60px;
+    /* include column for + button */
+    grid-template-columns: 32px 48px 1fr 56px 32px;
     gap: 12px;
     padding: 8px 12px;
   }

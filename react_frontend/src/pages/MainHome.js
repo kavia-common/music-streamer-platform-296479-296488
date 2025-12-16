@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
 import BottomPlayer from '../components/BottomPlayer';
 import { useAudiusTrending } from '../hooks/useAudiusTrending';
 import { useAudiusSearch } from '../hooks/useAudiusSearch';
+import { usePlaylists } from '../hooks/usePlaylists';
 import './MainHome.css';
+import './AddToPlaylist.css';
 
 /**
  * Main authenticated home page with Spotify-like layout
@@ -45,6 +47,52 @@ function MainHome() {
     ? `Found ${tracks.length} track${tracks.length !== 1 ? 's' : ''}` 
     : 'Top 20 tracks trending right now';
 
+  // Popover state and refs
+  const [openPopoverForTrackId, setOpenPopoverForTrackId] = useState(null);
+  const popoverRefs = useRef({});
+
+  // playlists data (non-blocking; existing hook will try to fetch if authenticated)
+  const { playlists, loading: playlistsLoading, error: playlistsError } = usePlaylists();
+
+  // Close popover if clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const openId = openPopoverForTrackId;
+      if (!openId) return;
+      const node = popoverRefs.current[openId];
+      if (node && !node.contains(event.target)) {
+        setOpenPopoverForTrackId(null);
+      }
+    };
+    if (openPopoverForTrackId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openPopoverForTrackId]);
+
+  const togglePopover = (e, trackId) => {
+    // prevent parent row click
+    e.stopPropagation();
+    e.preventDefault();
+    setOpenPopoverForTrackId(prev => (prev === trackId ? null : trackId));
+  };
+
+  const handlePopoverKeyDown = (e) => {
+    // accessibility: close on Escape
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      setOpenPopoverForTrackId(null);
+    }
+  };
+
+  const handlePlaylistSelect = (e) => {
+    // UI only: do not wire add action
+    e.stopPropagation();
+    e.preventDefault();
+    // Close after selection; hook up backend action here in future
+    setOpenPopoverForTrackId(null);
+  };
+
   return (
     <div className="main-home">
       <Sidebar />
@@ -72,35 +120,105 @@ function MainHome() {
           
           {!loading && !error && tracks.length > 0 && (
             <div className="trending-tracks">
-              {tracks.map((track, index) => (
-                <div 
-                  key={track.id || index} 
-                  className="track-item"
-                  onClick={() => handleTrackClick(track)}
-                >
-                  <div className="track-number">{index + 1}</div>
-                  <div className="track-artwork">
-                    {track.artwork && track.artwork['150x150'] ? (
-                      <img 
-                        src={track.artwork['150x150']} 
-                        alt={track.title || 'Track artwork'}
-                      />
-                    ) : (
-                      <span className="artwork-placeholder">🎵</span>
-                    )}
+              {tracks.map((track, index) => {
+                const trackId = track.id || `idx-${index}`;
+                const isOpen = openPopoverForTrackId === trackId;
+                return (
+                  <div 
+                    key={trackId} 
+                    className="track-item"
+                    onClick={() => handleTrackClick(track)}
+                    ref={(el) => { if (el) popoverRefs.current[trackId] = el; }}
+                  >
+                    <div className="track-number">{index + 1}</div>
+                    <div className="track-artwork">
+                      {track.artwork && track.artwork['150x150'] ? (
+                        <img 
+                          src={track.artwork['150x150']} 
+                          alt={track.title || 'Track artwork'}
+                        />
+                      ) : (
+                        <span className="artwork-placeholder">🎵</span>
+                      )}
+                    </div>
+                    <div className="track-info">
+                      <div className="track-title">{track.title || 'Unknown Track'}</div>
+                      <div className="track-artist">{track.user?.name || 'Unknown Artist'}</div>
+                    </div>
+                    <div className="track-duration">
+                      {track.duration ? formatDuration(track.duration) : '--:--'}
+                    </div>
+                    <div className="track-play-count">
+                      {track.play_count ? formatPlayCount(track.play_count) : '0'} plays
+                    </div>
+
+                    {/* Add to playlist button and popover */}
+                    <div className="add-to-playlist-container" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="add-to-playlist-btn"
+                        aria-label="Add to playlist"
+                        aria-haspopup="menu"
+                        aria-expanded={isOpen}
+                        onClick={(e) => togglePopover(e, trackId)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            togglePopover(e, trackId);
+                          }
+                        }}
+                      >
+                        +
+                      </button>
+                      {isOpen && (
+                        <div
+                          className="playlist-popover"
+                          role="menu"
+                          tabIndex={-1}
+                          onKeyDown={handlePopoverKeyDown}
+                        >
+                          <div className="playlist-popover-header">Add to playlist</div>
+                          
+                          {playlistsLoading && (
+                            <div className="playlist-popover-loading">Loading playlists...</div>
+                          )}
+                          {!playlistsLoading && playlistsError && (
+                            <div className="playlist-popover-error" role="alert">
+                              {playlistsError}
+                            </div>
+                          )}
+                          {!playlistsLoading && !playlistsError && (
+                            <>
+                              {playlists.length === 0 ? (
+                                <div className="playlist-popover-empty">
+                                  No playlists yet
+                                </div>
+                              ) : (
+                                <ul className="playlist-popover-list">
+                                  {playlists.map((p) => (
+                                    <li key={p.id}>
+                                      <button
+                                        type="button"
+                                        className="playlist-popover-item-btn"
+                                        role="menuitem"
+                                        onClick={handlePlaylistSelect}
+                                      >
+                                        <span>📻</span>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {p.name}
+                                        </span>
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="track-info">
-                    <div className="track-title">{track.title || 'Unknown Track'}</div>
-                    <div className="track-artist">{track.user?.name || 'Unknown Artist'}</div>
-                  </div>
-                  <div className="track-duration">
-                    {track.duration ? formatDuration(track.duration) : '--:--'}
-                  </div>
-                  <div className="track-play-count">
-                    {track.play_count ? formatPlayCount(track.play_count) : '0'} plays
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           
@@ -109,7 +227,7 @@ function MainHome() {
               <span className="empty-icon">🎵</span>
               <p>
                 {isSearching 
-                  ? `No tracks found for "${searchQuery}"` 
+                  ? `No tracks found for "${searchQuery}"`
                   : 'No trending tracks available at the moment'}
               </p>
             </div>
