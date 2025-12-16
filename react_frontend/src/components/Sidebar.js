@@ -65,6 +65,10 @@ function Sidebar() {
           <span className="nav-icon">📚</span>
           <span>Your Library</span>
         </Link>
+        <Link to="/favorites" className="nav-item">
+          <span className="nav-icon">❤️</span>
+          <span>Favorites</span>
+        </Link>
       </nav>
 
       <div className="sidebar-divider"></div>

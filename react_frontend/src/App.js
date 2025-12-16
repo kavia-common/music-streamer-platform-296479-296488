@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import MainHome from './pages/MainHome';
 import Profile from './pages/Profile';
 import PlaylistView from './pages/PlaylistView';
+import Favorites from './pages/Favorites';
 import PrivateRoute from './components/PrivateRoute';
 import { isAuthenticated } from './api/apiClient';
 import './App.css';
@@ -51,6 +52,14 @@ function App() {
           element={
             <PrivateRoute>
               <MainHome />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/favorites" 
+          element={
+            <PrivateRoute>
+              <Favorites />
             </PrivateRoute>
           } 
         />
