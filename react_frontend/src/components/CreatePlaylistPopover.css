@@ -1,23 +1,31 @@
-/* CreatePlaylistPopover Component Styles - Ocean Professional Theme */
+/* CreatePlaylistPopover Component Styles - Ocean Professional Theme (Dark Compact) */
+
+.z-overlay {
+  z-index: 9999; /* ensure above sidebar/top elements */
+}
 
 .create-playlist-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
+  /* position is set inline from JS when using portal */
   min-width: 280px;
-  max-width: 360px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 320px; /* tighter */
+  background: #111827; /* dark surface */
+  border-radius: 10px;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.35);
   padding: 0;
-  z-index: 1000;
-  animation: popoverSlideDown 0.2s ease-out;
+  border: 1px solid #1f2937; /* subtle border on dark */
+  animation: popoverSlideDown 0.18s ease-out;
+}
+
+.dark-theme {
+  color: #e5e7eb; /* text-gray-200 */
 }
 
 @keyframes popoverSlideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -26,22 +34,22 @@
 }
 
 .popover-header {
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid #1f2937;
 }
 
 .popover-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px; /* smaller */
   font-weight: 700;
-  color: #111827;
+  color: #f3f4f6; /* text-gray-100 */
 }
 
 .popover-form {
-  padding: 16px 20px 20px;
+  padding: 12px 14px 14px; /* compact */
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .form-field {
@@ -51,9 +59,9 @@
 }
 
 .form-field label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: #cbd5e1; /* slate-300 */
 }
 
 .required {
@@ -62,24 +70,29 @@
 }
 
 .form-field input[type="text"] {
-  padding: 10px 12px;
-  font-size: 14px;
-  border: 1px solid #d1d5db;
+  padding: 8px 10px; /* compact */
+  font-size: 13px;
+  border: 1px solid #374151; /* gray-700 */
   border-radius: 8px;
-  background: #ffffff;
-  color: #111827;
+  background: #1f2937; /* gray-800-ish */
+  color: #e5e7eb;
   font-family: inherit;
   transition: all 0.2s ease;
 }
 
+.form-field input[type="text"]::placeholder {
+  color: #9ca3af; /* placeholder gray */
+}
+
 .form-field input[type="text"]:focus {
   outline: none;
-  border-color: #2563EB;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #2563EB; /* primary blue */
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+  background: #1f2937;
 }
 
 .form-field input[type="text"]:disabled {
-  background: #f3f4f6;
+  background: #111827;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -90,26 +103,26 @@
 
 .form-field input[type="text"].error:focus {
   border-color: #EF4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
 }
 
 .field-error {
   font-size: 12px;
-  color: #EF4444;
+  color: #F59E0B; /* amber accent for message or keep red if required */
   font-weight: 500;
 }
 
 .popover-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .btn-cancel,
 .btn-submit {
   flex: 1;
-  padding: 10px 16px;
-  font-size: 14px;
+  padding: 8px 12px; /* compact */
+  font-size: 13px;
   font-weight: 600;
   border: none;
   border-radius: 8px;
@@ -118,13 +131,14 @@
 }
 
 .btn-cancel {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: #e5e7eb;
+  background: #0b1220;
+  border-color: #4b5563;
 }
 
 .btn-cancel:disabled {
@@ -133,14 +147,14 @@
 }
 
 .btn-submit {
-  background: #2563EB;
+  background: #2563EB; /* primary */
   color: #ffffff;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #1e40af;
+  background: #1e40af; /* darker blue */
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
 .btn-submit:active:not(:disabled) {
@@ -156,14 +170,12 @@
 @media (max-width: 768px) {
   .create-playlist-popover {
     min-width: 260px;
-    max-width: calc(100vw - 40px);
+    max-width: calc(100vw - 32px);
   }
-  
   .popover-header {
-    padding: 14px 16px 10px;
+    padding: 12px;
   }
-  
   .popover-form {
-    padding: 14px 16px 16px;
+    padding: 12px;
   }
 }

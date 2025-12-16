@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { createPlaylist } from '../api/apiClient';
 import { showSuccess, showError } from '../utils/toast';
 import './CreatePlaylistPopover.css';
@@ -6,6 +7,7 @@ import './CreatePlaylistPopover.css';
 /**
  * Popover component for creating a new playlist
  * Displays a simple form anchored to the create button with only a name field
+ * Renders via a portal to avoid clipping and ensure it can overlap the Sidebar.
  * @param {object} props - Component props
  * @param {boolean} props.isOpen - Whether the popover is open
  * @param {function} props.onClose - Callback to close the popover
@@ -19,11 +21,37 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
   const [errors, setErrors] = useState({});
   const popoverRef = useRef(null);
   const nameInputRef = useRef(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
 
-  // Focus trap management
+  // Compute and set popover position relative to the anchor element
+  useEffect(() => {
+    if (!isOpen || !anchorRef?.current) return;
+
+    const computePosition = () => {
+      const rect = anchorRef.current.getBoundingClientRect();
+      const margin = 8; // gap from button
+      const width = 304; // expected popover width (approx w-76)
+      // Prefer aligning right edge with anchor's right, but keep within viewport
+      let left = rect.right - width;
+      left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+      const top = rect.bottom + margin + window.scrollY;
+
+      setPosition({ top, left: left + window.scrollX });
+    };
+
+    computePosition();
+    // Recompute on window resize/scroll
+    window.addEventListener('resize', computePosition);
+    window.addEventListener('scroll', computePosition, true);
+    return () => {
+      window.removeEventListener('resize', computePosition);
+      window.removeEventListener('scroll', computePosition, true);
+    };
+  }, [isOpen, anchorRef]);
+
+  // Focus input when open
   useEffect(() => {
     if (isOpen && nameInputRef.current) {
-      // Focus the name input when popover opens
       nameInputRef.current.focus();
     }
   }, [isOpen]);
@@ -33,7 +61,6 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
     if (!isOpen) return;
 
     const handleClickOutside = (event) => {
-      // Don't close if clicking the anchor button or inside the popover
       if (
         popoverRef.current &&
         !popoverRef.current.contains(event.target) &&
@@ -85,7 +112,7 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -95,20 +122,16 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
     setIsSubmitting(true);
 
     try {
-      // Call createPlaylist with just the name; defaults will be used for description and is_public
       const result = await createPlaylist(name.trim());
       showSuccess(`Playlist "${name}" created successfully!`);
-      
-      // Reset form
+
       setName('');
       setErrors({});
-      
-      // Call success callback with the new playlist
+
       if (onSuccess) {
         onSuccess(result.playlist);
       }
-      
-      // Close popover
+
       onClose();
     } catch (error) {
       console.error('Error creating playlist:', error);
@@ -129,18 +152,23 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
 
   if (!isOpen) return null;
 
-  return (
-    <div 
-      className="create-playlist-popover" 
+  const popover = (
+    <div
+      className="create-playlist-popover dark-theme z-overlay"
       ref={popoverRef}
       role="dialog"
       aria-label="Create new playlist"
       aria-modal="true"
+      style={{
+        position: 'absolute',
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
     >
       <div className="popover-header">
         <h3>Create Playlist</h3>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="popover-form">
         <div className="form-field">
           <label htmlFor="playlist-name">
@@ -187,6 +215,9 @@ function CreatePlaylistPopover({ isOpen, onClose, onSuccess, anchorRef }) {
       </form>
     </div>
   );
+
+  // Render via portal to avoid any ancestor overflow clipping (e.g., Sidebar)
+  return ReactDOM.createPortal(popover, document.body);
 }
 
 export default CreatePlaylistPopover;

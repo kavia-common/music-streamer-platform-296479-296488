@@ -72,7 +72,7 @@ function Sidebar() {
       <div className="sidebar-playlists">
         <div className="playlists-header">
           <span>Playlists</span>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', overflow: 'visible' }}>
             <button 
               ref={createButtonRef}
               className="create-playlist-btn" 
