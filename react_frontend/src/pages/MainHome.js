@@ -112,12 +112,13 @@ function MainHome() {
       // Construct stream URL
       const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
       
-      // Prepare track data
+      // Prepare track data with artist_name
       const trackData = {
         title: track.title,
         duration_seconds: track.duration || 0,
         audius_track_id: track.id,
-        audius_stream_url: streamUrl
+        audius_stream_url: streamUrl,
+        artist_name: track.user?.name || null
       };
 
       // Add track to playlist

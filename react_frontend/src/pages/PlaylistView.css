@@ -288,7 +288,7 @@
 
 .tracks-header {
   display: grid;
-  grid-template-columns: 50px 1fr 120px 120px;
+  grid-template-columns: 50px 2fr 1.5fr 120px 120px;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #e5e7eb;
@@ -306,7 +306,7 @@
 
 .track-row {
   display: grid;
-  grid-template-columns: 50px 1fr 120px 120px;
+  grid-template-columns: 50px 2fr 1.5fr 120px 120px;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 6px;
@@ -326,30 +326,26 @@
 }
 
 .track-col-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.track-title-text {
   font-weight: 500;
   color: #111827;
   font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.track-stream-link {
-  color: #2563EB;
-  font-size: 0.8125rem;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: color 0.2s;
+.track-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.track-stream-link:hover {
-  color: #1e40af;
-  text-decoration: underline;
+.track-col-artist {
+  color: #6b7280;
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .track-col-duration,
@@ -378,7 +374,7 @@
 
   .tracks-header,
   .track-row {
-    grid-template-columns: 40px 1fr 80px;
+    grid-template-columns: 40px 1fr 1fr 80px;
   }
 
   .track-col-added {

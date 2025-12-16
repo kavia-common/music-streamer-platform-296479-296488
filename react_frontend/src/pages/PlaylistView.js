@@ -249,6 +249,7 @@ function PlaylistView() {
                     <div className="tracks-header">
                       <div className="track-col-number">#</div>
                       <div className="track-col-title">TITLE</div>
+                      <div className="track-col-artist">ARTIST</div>
                       <div className="track-col-duration">DURATION</div>
                       <div className="track-col-added">ADDED</div>
                     </div>
@@ -265,15 +266,9 @@ function PlaylistView() {
                             <div className="track-col-number">{index + 1}</div>
                             <div className="track-col-title">
                               <div className="track-title-text">{item.track.title}</div>
-                              <a 
-                                href={item.track.audius_stream_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="track-stream-link"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                🔗 Stream
-                              </a>
+                            </div>
+                            <div className="track-col-artist">
+                              {item.track.artist_name || 'Unknown Artist'}
                             </div>
                             <div className="track-col-duration">
                               {formatDuration(item.track.duration_seconds)}

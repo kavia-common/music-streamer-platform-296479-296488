@@ -195,6 +195,7 @@ export async function updatePlaylist(playlistId, updates) {
  * @param {number} trackData.duration_seconds - Track duration in seconds
  * @param {string} trackData.audius_track_id - Audius track ID
  * @param {string} trackData.audius_stream_url - Audius stream URL
+ * @param {string} trackData.artist_name - Optional artist name
  * @returns {Promise<object>} Response with success message
  */
 // PUBLIC_INTERFACE
@@ -210,16 +211,23 @@ export async function addTrackToPlaylist(playlistId, trackData) {
     throw new Error('Missing required track data fields');
   }
 
+  const payload = {
+    title: trackData.title,
+    duration_seconds: trackData.duration_seconds,
+    audius_track_id: trackData.audius_track_id,
+    audius_stream_url: trackData.audius_stream_url
+  };
+
+  // Include artist_name if provided
+  if (trackData.artist_name) {
+    payload.artist_name = trackData.artist_name;
+  }
+
   return apiRequest(`/api/playlists/${playlistId}/items`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`
     },
-    body: JSON.stringify({
-      title: trackData.title,
-      duration_seconds: trackData.duration_seconds,
-      audius_track_id: trackData.audius_track_id,
-      audius_stream_url: trackData.audius_stream_url
-    }),
+    body: JSON.stringify(payload),
   });
 }
